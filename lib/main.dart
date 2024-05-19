@@ -114,6 +114,7 @@ void initializeNotifications(
         } catch (e) {
           print(e);
         }
+        print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Accepted");
         navigatorKey.currentState?.push(MaterialPageRoute(
           builder: (context) {
             return CallScreen(
@@ -155,8 +156,10 @@ void showCallNotification(
     priority: Priority.high,
     fullScreenIntent: true,
     actions: <AndroidNotificationAction>[
-      AndroidNotificationAction('accept_action', 'Accept'),
-      AndroidNotificationAction('decline_action', 'Decline'),
+      AndroidNotificationAction('accept_action', 'Accept',
+          showsUserInterface: true),
+      AndroidNotificationAction('decline_action', 'Decline',
+          showsUserInterface: true),
     ],
   );
 

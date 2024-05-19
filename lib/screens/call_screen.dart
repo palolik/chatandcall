@@ -23,6 +23,7 @@ class _CallScreenState extends State<CallScreen> {
   Future<void> initializeAgora() async {
     await agoraConfig.initialize();
     var channelId = widget.data['channelId'];
+    print("------------------channelID" + channelId);
     await APIs.acceptCallInvitation(widget.callId);
     await agoraConfig.joinChannel(channelId);
   }

@@ -72,6 +72,8 @@ class APIs {
       if (token == null) {
         print('FCM token not found for user: $receiverId');
         return;
+      } else {
+        print(token);
       }
 
       final myData = await firestore.collection('users').doc(user.uid).get();
