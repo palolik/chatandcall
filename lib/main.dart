@@ -34,13 +34,17 @@ void main() {
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
-  _playRingtone();
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
   print("####################################");
-  APIs.markCallAsRinged(message.data['call_id']);
   initializeNotifications(flutterLocalNotificationsPlugin);
-  showCallNotification(flutterLocalNotificationsPlugin, message);
+  if (message.data['type'] == "CALL") {
+    _playRingtone();
+    APIs.markCallAsRinged(message.data['call_id']);
+    showCallNotification(flutterLocalNotificationsPlugin, message);
+  } else {
+    showChatNotification(flutterLocalNotificationsPlugin, message);
+  }
 }
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -70,7 +74,6 @@ class MyApp extends StatelessWidget {
 }
 
 _initializeFirebase() async {
-  print("---------------------------");
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   final messaging = FirebaseMessaging.instance;
 
@@ -114,7 +117,6 @@ void initializeNotifications(
         } catch (e) {
           print(e);
         }
-        print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Accepted");
         navigatorKey.currentState?.push(MaterialPageRoute(
           builder: (context) {
             return CallScreen(
@@ -172,6 +174,27 @@ void showCallNotification(
     message.notification?.body,
     platformChannelSpecifics,
     payload: message.data['call_id'],
+  );
+}
+
+void showChatNotification(
+    FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin,
+    RemoteMessage message) {
+  const AndroidNotificationDetails androidPlatformChannelSpecifics =
+      AndroidNotificationDetails('message_channel', 'chat',
+          channelDescription: 'Channel for incoming message notifications',
+          importance: Importance.max,
+          priority: Priority.high);
+
+  const NotificationDetails platformChannelSpecifics =
+      NotificationDetails(android: androidPlatformChannelSpecifics);
+
+  flutterLocalNotificationsPlugin.show(
+    0,
+    message.notification?.title,
+    message.notification?.body,
+    platformChannelSpecifics,
+    payload: message.data['sender'],
   );
 }
 

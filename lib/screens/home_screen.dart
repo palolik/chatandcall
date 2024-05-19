@@ -105,17 +105,20 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
-      _playRingtone();
-      print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-      showCallNotification(flutterLocalNotificationsPlugin, message);
-      print("dataaaaaaaaaaaa: ${message.data['call_id']}");
-      String callId = message.data['call_id'];
-      APIs.getIncomingCalls(callId).listen((event) async {
-        if (event.exists && (event.data()!['status'] == "ONGOING") ||
-            event.data()!['status'] == "MISSED") {
-          _stopRingtone();
-        }
-      });
+      if (message.data['type'] == "CALL") {
+        _playRingtone();
+        showCallNotification(flutterLocalNotificationsPlugin, message);
+        print("dataaaaaaaaaaaa: ${message.data['call_id']}");
+        String callId = message.data['call_id'];
+        APIs.getIncomingCalls(callId).listen((event) async {
+          if (event.exists && (event.data()!['status'] == "ONGOING") ||
+              event.data()!['status'] == "MISSED") {
+            _stopRingtone();
+          }
+        });
+      } else {
+        showChatNotification(flutterLocalNotificationsPlugin, message);
+      }
     });
 
     APIs.getSelfInfo();
@@ -137,6 +140,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
       return Future.value(message);
     });
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    _stopRingtone();
   }
 
   @override

@@ -87,7 +87,8 @@ class APIs {
           'click_action': 'FLUTTER_NOTIFICATION_CLICK',
           'id': '1',
           'status': 'done',
-          'call_id': callId
+          'call_id': callId,
+          'type': "CALL"
         }
       };
       // final bearerToken = await NotificationAccessToken.getToken;
@@ -119,6 +120,7 @@ class APIs {
       final body = {
         "message": {
           "token": chatUser.pushToken,
+          "data": {"type": "MESSAGE", "sender": chatUser.id},
           "notification": {
             "title": me.name, //our name should be send
             "body": msg,
