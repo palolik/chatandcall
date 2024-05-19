@@ -45,5 +45,9 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Talk To Others</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Video Call With Others</string>	
 </dict>
 </plist>

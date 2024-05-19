@@ -1,3 +1,4 @@
+import 'package:filechat/api/apis.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -15,8 +16,7 @@ class _AddContactState extends State<AddContact> {
   TextEditingController _phoneController = TextEditingController();
 
   // Reference to Firestore collection
-  final CollectionReference myContacts =
-  FirebaseFirestore.instance.collection('mycontacts');
+  final userRef = FirebaseFirestore.instance.collection('users');
 
   @override
   Widget build(BuildContext context) {
@@ -70,17 +70,35 @@ class _AddContactState extends State<AddContact> {
   // Function to handle submission of the new contact
   void _submitContact() async {
     try {
+      if (await APIs.getSelfEmail() == _emailController.value.text) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('You are already using this email.'),
+          ),
+        );
+      }
+      final contactId = await APIs.getContactId(_emailController.value.text);
+      if (contactId.docs.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+                'The user is not available on this app. You can send invite to join the app.'),
+          ),
+        );
+        return;
+      }
       // Get the current user's UID
       String? uid = FirebaseAuth.instance.currentUser?.uid;
 
       // Check if UID is available
       if (uid != null) {
         // Add contact data to Firestore
-        await myContacts.add({
+        await userRef.doc(uid).collection("contacts").add({
           'name': _nameController.text,
           'email': _emailController.text,
           'phone': _phoneController.text,
           'myuid': uid,
+          'contact_uid': contactId.docs[0].id
         });
 
         // Clear text fields after submission

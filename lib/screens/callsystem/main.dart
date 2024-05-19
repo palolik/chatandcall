@@ -1,10 +1,9 @@
-import 'package:agora_app/CallerScreen.dart';
-import 'package:agora_app/audio_call.dart';
+import 'package:filechat/screens/callsystem/audio_call.dart';
+import 'package:filechat/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'firebase_options.dart'; // Ensure this file exists and contains your Firebase configuration.
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,7 +18,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: NotificationHandler(), // Use NotificationHandler widget to handle Firebase messaging.
+      home:
+          NotificationHandler(), // Use NotificationHandler widget to handle Firebase messaging.
     );
   }
 }
@@ -33,7 +33,8 @@ class NotificationHandler extends StatefulWidget {
 
 class _NotificationHandlerState extends State<NotificationHandler> {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
-  final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
 
   @override
   void initState() {
@@ -43,31 +44,22 @@ class _NotificationHandlerState extends State<NotificationHandler> {
   }
 
   void _initializeLocalNotifications() {
-    const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    final InitializationSettings initializationSettings = InitializationSettings(
+    final InitializationSettings initializationSettings =
+        InitializationSettings(
       android: initializationSettingsAndroid,
     );
 
-    _flutterLocalNotificationsPlugin.initialize(
-      initializationSettings,
-      onSelectNotification: (String? payload) async {
-        if (payload != null) {
-          // Navigator.push(
-          //   context,
-          //   MaterialPageRoute(
-          //     builder: (context) => const CallerScreen(),
-          //   ),
-          // );
-        }
-      },
-    );
+    _flutterLocalNotificationsPlugin.initialize(initializationSettings);
   }
 
   void _initializeFirebaseMessaging() {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print("onMessage: $message");
-      _showNotification(message.notification?.title, message.notification?.body);
+      _showNotification(
+          message.notification?.title, message.notification?.body);
     });
 
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
@@ -83,7 +75,8 @@ class _NotificationHandlerState extends State<NotificationHandler> {
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   }
 
-  Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  Future<void> _firebaseMessagingBackgroundHandler(
+      RemoteMessage message) async {
     await Firebase.initializeApp();
     print("Handling a background message: ${message.messageId}");
     _showNotification(message.notification?.title, message.notification?.body);
@@ -91,11 +84,14 @@ class _NotificationHandlerState extends State<NotificationHandler> {
 
   Future<void> _showNotification(String? title, String? body) async {
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
-    AndroidNotificationDetails('your_channel_id', 'your_channel_name', 'your_chancnel_description',
-        importance: Importance.max, priority: Priority.high, showWhen: false);
+        AndroidNotificationDetails('your_channel_id', 'your_channel_name',
+            channelDescription: 'your_chancnel_description',
+            importance: Importance.max,
+            priority: Priority.high,
+            showWhen: false);
 
     const NotificationDetails platformChannelSpecifics =
-    NotificationDetails(android: androidPlatformChannelSpecifics);
+        NotificationDetails(android: androidPlatformChannelSpecifics);
 
     await _flutterLocalNotificationsPlugin.show(
       0,
@@ -122,7 +118,7 @@ class _NotificationHandlerState extends State<NotificationHandler> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const AudioCall(),
+                    builder: (context) => const SplashScreen(),
                   ),
                 );
               },

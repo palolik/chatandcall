@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
@@ -61,6 +62,54 @@ class APIs {
     // });
   }
 
+  static Future<void> sendCallNotificationToUser(
+      String receiverId, String callId) async {
+    try {
+      DocumentSnapshot<Map<String, dynamic>> data =
+          await firestore.collection("users").doc(receiverId).get();
+
+      String? token = data.data()?['push_token'];
+      if (token == null) {
+        print('FCM token not found for user: $receiverId');
+        return;
+      }
+
+      final myData = await firestore.collection('users').doc(user.uid).get();
+      print("[[[[[[[[[[[[[[[[[[[[${myData.data()!['name']}");
+      final title = "${myData.data()!['name']} is calling";
+      final body = "${myData.data()!['email']}";
+      final Map<String, dynamic> notificationData = {
+        'notification': {'title': title, 'body': body},
+        'priority': 'high',
+        'data': {
+          'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+          'id': '1',
+          'status': 'done',
+          'call_id': callId
+        }
+      };
+      // final bearerToken = await NotificationAccessToken.getToken;
+
+      await post(
+        Uri.parse('https://fcm.googleapis.com/fcm/send'),
+        headers: <String, String>{
+          'Content-Type': 'application/json',
+          'Authorization':
+              'key=AAAAnP25oUw:APA91bFamovJSeDLP-JAu_ZCx4nJVWp1sBv5qPGxfAkKAW4wfzxKqv1TBwFxfhoIBYv2kjBWcWmK_eyHYLsgt1I01KyZaDcA7jCoJLgg1m9i0KUyoHxbrTSkYL7Ir2Td44Gj2fsV1qjO', // Replace with your server key
+        },
+        body: jsonEncode(
+          <String, dynamic>{
+            'to': token,
+            ...notificationData,
+          },
+        ),
+      );
+      print('Notification sent successfully to user: $receiverId');
+    } catch (e) {
+      print('Error sending notification: $e');
+    }
+  }
+
   // for sending push notification (Updated Codes)
   static Future<void> sendPushNotification(
       ChatUser chatUser, String msg) async {
@@ -106,6 +155,79 @@ class APIs {
   // for checking if user exists or not?
   static Future<bool> userExists() async {
     return (await firestore.collection('users').doc(user.uid).get()).exists;
+  }
+
+  static Future<String> getSelfEmail() async {
+    final data = await firestore.collection("users").doc(user.uid).get();
+    return data.data()!['email'];
+  }
+
+  static Future<QuerySnapshot<Map<String, dynamic>>> getContactId(
+      String email) async {
+    return await firestore
+        .collection('users')
+        .where('email', isEqualTo: email)
+        .get();
+  }
+
+  static Stream<DocumentSnapshot<Map<String, dynamic>>> getIncomingCalls(
+      String callId) {
+    return firestore.collection('calls').doc(callId).snapshots();
+  }
+
+  static Future<QuerySnapshot<Map<String, dynamic>>> getMyContacts() async {
+    return await firestore
+        .collection("users")
+        .doc(user.uid)
+        .collection("contacts")
+        .get();
+  }
+
+  static Future<void> createCallInvitation(
+      Map<String, dynamic> data, String channelId) async {
+    await firestore.collection('calls').add({
+      'sender': user.uid,
+      'receiver': data['contact_uid'],
+      'receiver_name': data['name'],
+      'channelId': channelId,
+      'status': "CALLING",
+      'timestamp': FieldValue.serverTimestamp(),
+    }).then((value) async {
+      await sendCallNotificationToUser(data['contact_uid'], value.id);
+    });
+  }
+
+  static Future<void> acceptCallInvitation(String callId) async {
+    await firestore
+        .collection("calls")
+        .doc(callId)
+        .update({'status': "ONGOING"});
+  }
+
+  static Future<void> doneCall(String callId) async {
+    await firestore
+        .collection("calls")
+        .doc(callId)
+        .update({'status': "COMPLETED"});
+  }
+
+  static Future<void> markCallAsRinged(String callId) async {
+    await firestore
+        .collection("calls")
+        .doc(callId)
+        .update({'status': "MISSED"});
+  }
+
+  static Future<void> markCallAsRejected(String callId) async {
+    await firestore
+        .collection("calls")
+        .doc(callId)
+        .update({'status': "REJECTED"});
+  }
+
+  static Future<Map<String, dynamic>> getCallData(String callId) async {
+    final data = await firestore.collection("calls").doc(callId).get();
+    return data.data()!;
   }
 
   // for adding an chat user for our conversation

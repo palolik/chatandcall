@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:filechat/models/contact_user.dart';
 import 'package:filechat/screens/add_contacts.dart';
 import 'package:filechat/screens/call_history.dart';
 import 'package:filechat/screens/home_screen.dart';
+import 'package:filechat/screens/ongoing_call.dart';
 import 'package:filechat/screens/profile_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -19,8 +21,8 @@ class _ContactScreenState extends State<ContactScreen> {
   int _selectedIndex = 2;
 
   // Reference to Firestore collection
-  final CollectionReference myContacts =
-  FirebaseFirestore.instance.collection('mycontacts');
+  final CollectionReference userRef =
+      FirebaseFirestore.instance.collection('users');
 
   // Function to handle bottom navigation item selection
   void _onItemTapped(int index) {
@@ -80,9 +82,7 @@ class _ContactScreenState extends State<ContactScreen> {
         onTap: _onItemTapped,
       ),
       body: FutureBuilder<QuerySnapshot>(
-        future: myContacts
-            .where('myuid', isEqualTo: FirebaseAuth.instance.currentUser!.uid)
-            .get(),
+        future: APIs.getMyContacts(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -96,9 +96,10 @@ class _ContactScreenState extends State<ContactScreen> {
               itemCount: documents.length,
               itemBuilder: (context, index) {
                 final Map<String, dynamic> data =
-                documents[index].data() as Map<String, dynamic>;
+                    documents[index].data() as Map<String, dynamic>;
                 return ListTile(
-                  contentPadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                   leading: CircleAvatar(
                     backgroundColor: Colors.blue,
                     child: Icon(
@@ -131,12 +132,21 @@ class _ContactScreenState extends State<ContactScreen> {
                         },
                       ),
                       IconButton(
-                        icon: Icon(
+                        icon: const Icon(
                           Icons.call,
                           color: Colors.blue,
                         ),
                         onPressed: () {
-                          // Implement call functionality
+                          ContactUser contactUser = ContactUser(
+                              name: data['name'],
+                              email: data['email'],
+                              phone: data['phone'],
+                              uid: data['contact_uid']);
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) =>
+                                      OngoingCall(contactUser: data)));
                         },
                       ),
                     ],
@@ -154,8 +164,8 @@ class _ContactScreenState extends State<ContactScreen> {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => AddContact()),
-          );
+            MaterialPageRoute(builder: (_) => const AddContact()),
+          ).then((value) => setState(() {}));
         },
         child: const Icon(Icons.contact_phone),
       ),
