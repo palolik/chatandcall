@@ -4,7 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gallery_saver_updated/gallery_saver.dart';
-
+import 'package:photo_view/photo_view.dart';
 import '../api/apis.dart';
 import '../helper/dialogs.dart';
 import '../helper/my_date_util.dart';
@@ -33,8 +33,71 @@ class _MessageCardState extends State<MessageCard> {
   }
 
   // sender or another user message
+  // Widget _blueMessage() {
+  //   //update last read message if sender and receiver are different
+  //   if (widget.message.read.isEmpty) {
+  //     APIs.updateMessageReadStatus(widget.message);
+  //   }
+  //
+  //   return Row(
+  //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //     children: [
+  //       //message content
+  //       Flexible(
+  //         child: Container(
+  //           padding: EdgeInsets.all(widget.message.type == Type.image
+  //               ? mq.width * .03
+  //               : mq.width * .04),
+  //           margin: EdgeInsets.symmetric(
+  //               horizontal: mq.width * .04, vertical: mq.height * .01),
+  //           decoration: BoxDecoration(
+  //               color: const Color.fromARGB(255, 221, 245, 255),
+  //               border: Border.all(color: Colors.lightBlue),
+  //               //making borders curved
+  //               borderRadius: const BorderRadius.only(
+  //                   topLeft: Radius.circular(30),
+  //                   topRight: Radius.circular(30),
+  //                   bottomRight: Radius.circular(30))),
+  //           child: widget.message.type == Type.text
+  //               ?
+  //               //show text
+  //               Text(
+  //                   widget.message.msg,
+  //                   style: const TextStyle(fontSize: 15, color: Colors.black87),
+  //                 )
+  //               :
+  //               //show image
+  //               ClipRRect(
+  //                   borderRadius: BorderRadius.circular(15),
+  //                   child: CachedNetworkImage(
+  //                     imageUrl: widget.message.msg,
+  //                     fit: BoxFit.cover,
+  //                     placeholder: (context, url) => const Padding(
+  //                       padding: EdgeInsets.all(8.0),
+  //                       child: CircularProgressIndicator(strokeWidth: 2),
+  //                     ),
+  //                     errorWidget: (context, url, error) =>
+  //                         const Icon(Icons.image, size: 70),
+  //                   ),
+  //                 ),
+  //         ),
+  //       ),
+  //
+  //       //message time
+  //       Padding(
+  //         padding: EdgeInsets.only(right: mq.width * .04),
+  //         child: Text(
+  //           MyDateUtil.getFormattedTime(
+  //               context: context, time: widget.message.sent),
+  //           style: const TextStyle(fontSize: 13, color: Colors.black54),
+  //         ),
+  //       ),
+  //     ],
+  //   );
+  // }
+
   Widget _blueMessage() {
-    //update last read message if sender and receiver are different
+    // Update last read message if sender and receiver are different
     if (widget.message.read.isEmpty) {
       APIs.updateMessageReadStatus(widget.message);
     }
@@ -42,53 +105,72 @@ class _MessageCardState extends State<MessageCard> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        //message content
+        // Message content
         Flexible(
-          child: Container(
-            padding: EdgeInsets.all(widget.message.type == Type.image
-                ? mq.width * .03
-                : mq.width * .04),
-            margin: EdgeInsets.symmetric(
-                horizontal: mq.width * .04, vertical: mq.height * .01),
-            decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 221, 245, 255),
-                border: Border.all(color: Colors.lightBlue),
-                //making borders curved
-                borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(30),
-                    topRight: Radius.circular(30),
-                    bottomRight: Radius.circular(30))),
-            child: widget.message.type == Type.text
-                ?
-                //show text
-                Text(
-                    widget.message.msg,
-                    style: const TextStyle(fontSize: 15, color: Colors.black87),
-                  )
-                :
-                //show image
-                ClipRRect(
-                    borderRadius: BorderRadius.circular(15),
-                    child: CachedNetworkImage(
+          child: GestureDetector(
+            onTap: () {
+              if (widget.message.type == Type.image) {
+                // Open full-screen image view
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => FullScreenImageView(
                       imageUrl: widget.message.msg,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                      errorWidget: (context, url, error) =>
-                          const Icon(Icons.image, size: 70),
                     ),
                   ),
+                );
+              }
+            },
+            child: Container(
+              padding: EdgeInsets.all(
+                widget.message.type == Type.image ? mq.width * .03 : mq.width * .04,
+              ),
+              margin: EdgeInsets.symmetric(
+                horizontal: mq.width * .04,
+                vertical: mq.height * .01,
+              ),
+              decoration: BoxDecoration(
+                color: const Color.fromARGB(255, 221, 245, 255),
+                border: Border.all(color: Colors.lightBlue),
+                // Making borders curved
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(30),
+                  topRight: Radius.circular(30),
+                  bottomRight: Radius.circular(30),
+                ),
+              ),
+              child: widget.message.type == Type.text
+                  ? // Show text
+              Text(
+                widget.message.msg,
+                style: const TextStyle(fontSize: 15, color: Colors.black87),
+              )
+                  : // Show image
+              ClipRRect(
+                borderRadius: BorderRadius.circular(15),
+                child: CachedNetworkImage(
+                  imageUrl: widget.message.msg,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                  errorWidget: (context, url, error) =>
+                  const Icon(Icons.image, size: 70),
+                ),
+              ),
+            ),
           ),
         ),
 
-        //message time
+        // Message time
         Padding(
           padding: EdgeInsets.only(right: mq.width * .04),
           child: Text(
             MyDateUtil.getFormattedTime(
-                context: context, time: widget.message.sent),
+              context: context,
+              time: widget.message.sent,
+            ),
             style: const TextStyle(fontSize: 13, color: Colors.black54),
           ),
         ),
@@ -125,41 +207,43 @@ class _MessageCardState extends State<MessageCard> {
 
         //message content
         Flexible(
-          child: Container(
-            padding: EdgeInsets.all(widget.message.type == Type.image
-                ? mq.width * .03
-                : mq.width * .04),
-            margin: EdgeInsets.symmetric(
-                horizontal: mq.width * .04, vertical: mq.height * .01),
-            decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 218, 255, 176),
-                border: Border.all(color: Colors.lightGreen),
-                //making borders curved
-                borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(30),
-                    topRight: Radius.circular(30),
-                    bottomLeft: Radius.circular(30))),
-            child: widget.message.type == Type.text
-                ?
-                //show text
-                Text(
-                    widget.message.msg,
-                    style: const TextStyle(fontSize: 15, color: Colors.black87),
-                  )
-                :
-                //show image
-                ClipRRect(
-                    borderRadius: BorderRadius.circular(15),
-                    child: CachedNetworkImage(
-                      imageUrl: widget.message.msg,
-                      placeholder: (context, url) => const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: CircularProgressIndicator(strokeWidth: 2),
+          child: GestureDetector(
+            child: Container(
+              padding: EdgeInsets.all(widget.message.type == Type.image
+                  ? mq.width * .02
+                  : mq.width * .02),
+              margin: EdgeInsets.symmetric(
+                  horizontal: mq.width * .03, vertical: mq.height * .01),
+              decoration: BoxDecoration(
+                  color: const Color.fromARGB(255, 218, 255, 176),
+                  border: Border.all(color: Colors.lightGreen),
+                  //making borders curved
+                  borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20),
+                      bottomLeft: Radius.circular(20))),
+              child: widget.message.type == Type.text
+                  ?
+                  //show text
+                  Text(
+                      widget.message.msg,
+                      style: const TextStyle(fontSize: 15, color: Colors.black87),
+                    )
+                  :
+                  //show image
+                  ClipRRect(
+                      borderRadius: BorderRadius.circular(15),
+                      child: CachedNetworkImage(
+                        imageUrl: widget.message.msg,
+                        placeholder: (context, url) => const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                        errorWidget: (context, url, error) =>
+                            const Icon(Icons.image, size: 70),
                       ),
-                      errorWidget: (context, url, error) =>
-                          const Icon(Icons.image, size: 70),
                     ),
-                  ),
+            ),
           ),
         ),
       ],
@@ -204,7 +288,7 @@ class _MessageCardState extends State<MessageCard> {
                         });
                       })
                   :
-                  //save option
+
                   _OptionItem(
                       icon: const Icon(Icons.download_rounded,
                           color: Colors.blue, size: 26),
@@ -378,5 +462,44 @@ class _OptionItem extends StatelessWidget {
                         letterSpacing: 0.5)))
           ]),
         ));
+  }
+}
+
+class FullScreenImageView extends StatelessWidget {
+  final String imageUrl;
+
+  const FullScreenImageView({Key? key, required this.imageUrl}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      body: Center(
+        child: InteractiveViewer(
+          boundaryMargin: EdgeInsets.all(20.0),
+          minScale: 0.1,
+          maxScale: 4.0,
+          child: Hero(
+            tag: imageUrl, // Use imageUrl as hero tag for smooth transition
+            child: Image.network(
+              imageUrl,
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return CircularProgressIndicator(
+                  value: loadingProgress.expectedTotalBytes != null
+                      ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                      : null,
+                );
+              },
+              errorBuilder: (context, error, stackTrace) => Icon(Icons.error),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
