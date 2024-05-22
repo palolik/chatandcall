@@ -95,6 +95,21 @@ class _ViewProfileScreenState extends State<ViewProfileScreen> {
                               color: Colors.black54, fontSize: 15)),
                     ],
                   ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'phone: ',
+                        style: TextStyle(
+                            color: Colors.black87,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 15),
+                      ),
+                      Text(widget.user.phone,
+                          style: const TextStyle(
+                              color: Colors.black54, fontSize: 15)),
+                    ],
+                  ),
                 ],
               ),
             ),

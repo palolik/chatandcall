@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gallery_saver_updated/gallery_saver.dart';
 import 'package:photo_view/photo_view.dart';
+import 'package:photo_view/photo_view_gallery.dart';
 import '../api/apis.dart';
 import '../helper/dialogs.dart';
 import '../helper/my_date_util.dart';
@@ -208,6 +209,19 @@ class _MessageCardState extends State<MessageCard> {
         //message content
         Flexible(
           child: GestureDetector(
+            onTap: () {
+              if (widget.message.type == Type.image) {
+                // Open full-screen image view
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => FullScreenImageView(
+                      imageUrl: widget.message.msg,
+                    ),
+                  ),
+                );
+              }
+            },
             child: Container(
               padding: EdgeInsets.all(widget.message.type == Type.image
                   ? mq.width * .02
@@ -479,24 +493,16 @@ class FullScreenImageView extends StatelessWidget {
         elevation: 0,
       ),
       body: Center(
-        child: InteractiveViewer(
-          boundaryMargin: EdgeInsets.all(20.0),
-          minScale: 0.1,
-          maxScale: 4.0,
-          child: Hero(
-            tag: imageUrl, // Use imageUrl as hero tag for smooth transition
-            child: Image.network(
-              imageUrl,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                return CircularProgressIndicator(
-                  value: loadingProgress.expectedTotalBytes != null
-                      ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                      : null,
-                );
-              },
-              errorBuilder: (context, error, stackTrace) => Icon(Icons.error),
+        child: Container(
+          child: PhotoView(
+            imageProvider: NetworkImage(imageUrl),
+            minScale: PhotoViewComputedScale.contained * 0.8,
+            maxScale: PhotoViewComputedScale.covered * 5,
+            enableRotation: true,
+            loadingBuilder: (context, event) => Center(
+              child: CircularProgressIndicator(),
             ),
+            errorBuilder: (context, error, stackTrace) => Icon(Icons.error),
           ),
         ),
       ),

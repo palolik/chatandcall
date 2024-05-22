@@ -28,6 +28,7 @@ class APIs {
       name: user.displayName.toString(),
       email: user.email.toString(),
       about: "Hey, I'm using We Chat!",
+      phone: "tttttt",
       image: user.photoURL.toString(),
       createdAt: '',
       isOnline: false,
@@ -235,10 +236,10 @@ class APIs {
   }
 
   // for adding an chat user for our conversation
-  static Future<bool> addChatUser(String email) async {
+  static Future<bool> addChatUser(String phone) async {
     final data = await firestore
         .collection('users')
-        .where('email', isEqualTo: email)
+        .where('phone', isEqualTo: phone)
         .get();
 
     log('data: ${data.docs}');
@@ -288,6 +289,7 @@ class APIs {
         name: user.displayName.toString(),
         email: user.email.toString(),
         about: "hey there! let's call with bd call",
+        phone: "phonenumber",
         image: user.photoURL.toString(),
         createdAt: time,
         isOnline: false,
@@ -340,6 +342,7 @@ class APIs {
     await firestore.collection('users').doc(user.uid).update({
       'name': me.name,
       'about': me.about,
+      'phone': me.phone,
     });
   }
 

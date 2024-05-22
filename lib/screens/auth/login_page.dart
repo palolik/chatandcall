@@ -1,5 +1,4 @@
 import 'package:filechat/screens/home_screen.dart';
-import 'package:filechat/screens/navigation_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'ResetPassLink.dart';

@@ -10,7 +10,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-
 import '../api/apis.dart';
 import '../helper/dialogs.dart';
 import '../main.dart';
@@ -166,7 +165,14 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Scaffold(
           // app bar
           appBar: AppBar(
-            leading: const Icon(CupertinoIcons.home),
+            leading: IconButton(
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => ProfileScreen(user: APIs.me)));
+                },
+                icon: const Icon(Icons.home_outlined)),
             title: _isSearching
                 ? TextField(
                     decoration: const InputDecoration(
@@ -189,7 +195,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       }
                     },
                   )
-                : const Text('BD Call'),
+                :  Image.asset('assets/images/logo.jpg'),
             actions: [
               // search user button
               IconButton(
@@ -202,14 +208,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       ? CupertinoIcons.clear_circled_solid
                       : Icons.search)),
               // more features button
-              IconButton(
-                  onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => ProfileScreen(user: APIs.me)));
-                  },
-                  icon: const Icon(Icons.more_vert))
+              // IconButton(
+              //     onPressed: () {
+              //       Navigator.push(
+              //           context,
+              //           MaterialPageRoute(
+              //               builder: (_) => ProfileScreen(user: APIs.me)));
+              //     },
+              //     icon: const Icon(Icons.more_vert))
             ],
           ),
           // bottom navigation bar
@@ -220,11 +226,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 label: 'Home',
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.star),
+                icon: Icon(Icons.swap_calls_sharp),
                 label: 'Call History',
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.settings),
+                icon: Icon(Icons.contact_mail_sharp),
                 label: 'Contacts',
               ),
             ],
@@ -305,7 +311,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // for adding a new chat user
   void _addChatUserDialog() {
-    String email = '';
+    String phone = '';
 
     showDialog(
         context: context,
@@ -328,10 +334,10 @@ class _HomeScreenState extends State<HomeScreen> {
               // content
               content: TextFormField(
                 maxLines: null,
-                onChanged: (value) => email = value,
+                onChanged: (value) => phone = value,
                 decoration: InputDecoration(
-                    hintText: 'Email Id',
-                    prefixIcon: const Icon(Icons.email, color: Colors.blue),
+                    hintText: 'phone number',
+                    prefixIcon: const Icon(Icons.phone_iphone, color: Colors.blue),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15))),
               ),
@@ -350,8 +356,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     onPressed: () async {
                       // hide alert dialog
                       Navigator.pop(context);
-                      if (email.isNotEmpty) {
-                        await APIs.addChatUser(email).then((value) {
+                      if (phone.isNotEmpty) {
+                        await APIs.addChatUser(phone).then((value) {
                           if (!value) {
                             Dialogs.showSnackbar(
                                 context, 'User does not Exists!');

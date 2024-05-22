@@ -53,7 +53,11 @@ class _OngoingCallState extends State<OngoingCall> {
               "${widget.contactUser['name']}",
               style: const TextStyle(fontSize: 30),
             ),
-            const SizedBox(height: 40),
+            Text(
+              "${widget.contactUser['phone']}",
+              style: const TextStyle(fontSize: 30),
+            ),
+            const SizedBox(height: 300),
             IconButton(
               icon: const Icon(Icons.call_end, color: Colors.red, size: 50),
               onPressed: () {

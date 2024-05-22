@@ -161,6 +161,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                     // about input field
                     TextFormField(
+                      initialValue: widget.user.phone,
+                      onSaved: (val) => APIs.me.phone = val ?? '',
+                      validator: (val) => val != null && val.isNotEmpty
+                          ? null
+                          : 'Required Field',
+                      decoration: InputDecoration(
+                          prefixIcon: const Icon(Icons.phone,
+                              color: Colors.blue),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                          hintText: '+8801234',
+                          label: const Text('phone')),
+                    ),
+                    SizedBox(height: mq.height * .02),
+                    TextFormField(
                       initialValue: widget.user.about,
                       onSaved: (val) => APIs.me.about = val ?? '',
                       validator: (val) => val != null && val.isNotEmpty
