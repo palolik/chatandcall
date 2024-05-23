@@ -130,9 +130,11 @@
 //     }
 //   }
 // }
+import 'package:filechat/api/apis.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
 
 class AddContact extends StatefulWidget {
   const AddContact({Key? key}) : super(key: key);
@@ -143,12 +145,11 @@ class AddContact extends StatefulWidget {
 
 class _AddContactState extends State<AddContact> {
   TextEditingController _nameController = TextEditingController();
-  // TextEditingController _emailController = TextEditingController();
-  TextEditingController _phoneController = TextEditingController();
-
+  TextEditingController _emailController = TextEditingController();
+  String phone_numner = "";
   // Reference to Firestore collection
   final CollectionReference myContacts =
-  FirebaseFirestore.instance.collection('mycontacts');
+      FirebaseFirestore.instance.collection('mycontacts');
 
   @override
   Widget build(BuildContext context) {
@@ -157,7 +158,7 @@ class _AddContactState extends State<AddContact> {
         title: const Text('Add Contact'),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -169,29 +170,38 @@ class _AddContactState extends State<AddContact> {
               ),
             ),
             const SizedBox(height: 16.0),
-            // TextField(
-            //   controller: _emailController,
-            //   decoration: const InputDecoration(
-            //     labelText: 'Email',
-            //     border: OutlineInputBorder(),
-            //   ),
-            // ),
-            const SizedBox(height: 16.0),
             TextField(
-              controller: _phoneController,
+              controller: _emailController,
               decoration: const InputDecoration(
-                labelText: 'Mobile Number(use country codes too)',
+                labelText: 'Email',
                 border: OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 16.0),
-            const SizedBox(height: 32.0),
+            IntlPhoneField(
+              decoration: const InputDecoration(
+                labelText: 'Phone Number',
+                border: OutlineInputBorder(
+                  borderSide: BorderSide(),
+                ),
+              ),
+              initialCountryCode: 'BD',
+              onChanged: (phone) {
+                phone_numner = phone.completeNumber;
+              },
+            ),
+            Spacer(),
             ElevatedButton(
               onPressed: () {
                 // Perform the action when the button is pressed
                 _submitContact();
               },
-              child: const Text('Submit new Contact'),
+              child: const Text(
+                'Submit new Contact',
+                style: TextStyle(color: Colors.white),
+              ),
+              style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(Colors.blue)),
             ),
           ],
         ),
@@ -202,23 +212,42 @@ class _AddContactState extends State<AddContact> {
   // Function to handle submission of the new contact
   void _submitContact() async {
     try {
-      // Get the current user's UID
+      if (phone_numner == "") {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Invalid Phone number")));
+        return;
+      }
+      if (await APIs.getSelfPhone() == phone_numner) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Invalid Phone number")));
+        return;
+      }
       String? uid = FirebaseAuth.instance.currentUser?.uid;
 
       // Check if UID is available
       if (uid != null) {
-        // Add contact data to Firestore
-        await myContacts.add({
-          'name': _nameController.text,
-          // 'email': _emailController.text,
-          'phone': _phoneController.text,
-          'myuid': uid,
-        });
+        List<QueryDocumentSnapshot<Object?>> users =
+            await APIs.getUsersByPhone(phone_numner);
+        if (users.isNotEmpty) {
+          await myContacts.add({
+            'name': _nameController.text,
+            'phone': phone_numner,
+            'myuid': uid,
+            'user_uid': users[0].id,
+            'active_user': true
+          });
+        } else {
+          await myContacts.add({
+            'name': _nameController.text,
+            'phone': phone_numner,
+            'myuid': uid,
+            'active_user': false
+          });
+        }
 
         // Clear text fields after submission
         _nameController.clear();
-        // _emailController.clear();
-        _phoneController.clear();
+        _emailController.clear();
 
         // Show a success message or navigate to another screen
         ScaffoldMessenger.of(context).showSnackBar(

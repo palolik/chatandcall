@@ -162,9 +162,9 @@ class APIs {
     return (await firestore.collection('users').doc(user.uid).get()).exists;
   }
 
-  static Future<String> getSelfEmail() async {
+  static Future<String> getSelfPhone() async {
     final data = await firestore.collection("users").doc(user.uid).get();
-    return data.data()!['email'];
+    return data.data()!['phone'];
   }
 
   static Future<QuerySnapshot<Map<String, dynamic>>> getContactId(
@@ -173,6 +173,15 @@ class APIs {
         .collection('users')
         .where('email', isEqualTo: email)
         .get();
+  }
+
+  static Future<List<QueryDocumentSnapshot>> getUsersByPhone(
+      String phone) async {
+    final ref = await firestore
+        .collection("users")
+        .where('phone', isEqualTo: phone)
+        .get();
+    return ref.docs;
   }
 
   static Stream<DocumentSnapshot<Map<String, dynamic>>> getIncomingCalls(

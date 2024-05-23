@@ -8,7 +8,7 @@
 // import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:flutter/material.dart';
 //
- import 'package:filechat/screens/ongoing_call.dart';
+import 'package:filechat/screens/ongoing_call.dart';
 
 import '../api/apis.dart';
 //
@@ -189,7 +189,6 @@ import '../models/contact_user.dart';
 import 'chat_screen.dart';
 
 class ContactScreen extends StatefulWidget {
-
   const ContactScreen({Key? key}) : super(key: key);
 
   @override
@@ -201,7 +200,7 @@ class _ContactScreenState extends State<ContactScreen> {
 
   // Reference to Firestore collection
   final CollectionReference myContacts =
-  FirebaseFirestore.instance.collection('mycontacts');
+      FirebaseFirestore.instance.collection('mycontacts');
 
   // Function to handle bottom navigation item selection
   void _onItemTapped(int index) {
@@ -227,7 +226,7 @@ class _ContactScreenState extends State<ContactScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title:  Image.asset('assets/images/logo.jpg'),
+        title: Image.asset('assets/images/logo.jpg'),
         actions: [
           IconButton(
             onPressed: () {
@@ -277,9 +276,10 @@ class _ContactScreenState extends State<ContactScreen> {
               itemCount: documents.length,
               itemBuilder: (context, index) {
                 final Map<String, dynamic> data =
-                documents[index].data() as Map<String, dynamic>;
+                    documents[index].data() as Map<String, dynamic>;
                 return ListTile(
-                  contentPadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                   leading: CircleAvatar(
                     backgroundColor: Colors.blue,
                     child: Icon(
@@ -299,43 +299,47 @@ class _ContactScreenState extends State<ContactScreen> {
                       color: Colors.grey[600],
                     ),
                   ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: Icon(
-                          Icons.message_outlined,
-                          color: Colors.blue,
+                  trailing: data['active_user'] != null && data['active_user']
+                      ? Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: Icon(
+                                Icons.message_outlined,
+                                color: Colors.blue,
+                              ),
+                              onPressed: () async {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (_) => ChatScreen(
+                                              user: data['phone'],
+                                            )));
+                              },
+                            ),
+                            IconButton(
+                              icon: const Icon(
+                                Icons.call,
+                                color: Colors.blue,
+                              ),
+                              onPressed: () {
+                                ContactUser contactUser = ContactUser(
+                                  name: data['name'],
+                                  phone: data['phone'],
+                                );
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (_) =>
+                                            OngoingCall(contactUser: data)));
+                              },
+                            ),
+                          ],
+                        )
+                      : const Text(
+                          "Not Available",
+                          style: TextStyle(color: Colors.blue, fontSize: 12),
                         ),
-                        onPressed: () {
-                          print(data['phone']);
-
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) =>
-                                      ChatScreen(user: data['phone'])));
-                        },
-                      ),
-                      IconButton(
-                        icon: const Icon(
-                          Icons.call,
-                          color: Colors.blue,
-                        ),
-                        onPressed: () {
-                          ContactUser contactUser = ContactUser(
-                              name: data['name'],
-                              phone: data['phone'],
-                             );
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) =>
-                                      OngoingCall(contactUser: data)));
-                        },
-                      ),
-                    ],
-                  ),
                   onTap: () {
                     // Implement onTap functionality
                   },
